@@ -9,5 +9,3 @@ export class DashPage {
         this.addMission = page.getByRole('link', { name: 'Nova missão' })
     }
 }
-
-export { DashPage as DashboardPage }
