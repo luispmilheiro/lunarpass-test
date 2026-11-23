@@ -1,17 +1,17 @@
 import { Page, Locator, expect } from '@playwright/test'
-import { Mission } from '../../support/types'
-import { formatDate } from '../../support/helpers'
+
+import { Mission } from '../../types'
+
+import { formatDate } from '../../helpers'
 
 export class RegisterPage {
     readonly page: Page
     readonly title: Locator
-    readonly saveButton: Locator
     readonly alert: Locator
 
     constructor(page: Page) {
         this.page = page
         this.title = page.getByRole('heading', { name: 'Programar missão' })
-        this.saveButton = page.getByRole('button', { name: 'Salvar missão' })
         this.alert = page.getByRole('alert')
     }
 
@@ -22,6 +22,7 @@ export class RegisterPage {
         await this.page.getByRole('textbox', { name: 'Data de partida' }).fill(mission.departureDate)
         await expect(this.page.getByTestId('mission-form-return-date')).toContainText(formatDate(mission.returnDate))
         await this.page.getByRole('spinbutton', { name: 'Preço por passagem (USD)' }).fill(mission.price.toString())
-        await this.saveButton.click()
+
+        await this.page.getByRole('button', { name: 'Salvar missão' }).click()
     }
 }

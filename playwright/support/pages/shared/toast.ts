@@ -1,11 +1,11 @@
 import { Page, Locator } from '@playwright/test'
 
-export class Navbar {
+export class Toast {
     readonly page: Page
-    readonly logout: Locator
+    readonly message: Locator
 
     constructor(page: Page) {
         this.page = page
-        this.logout = page.getByRole('button', { name: 'Sair' })
+        this.message = page.getByRole('listitem')
     }
 }

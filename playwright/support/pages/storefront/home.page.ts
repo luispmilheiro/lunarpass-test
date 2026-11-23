@@ -10,6 +10,14 @@ export class HomePage {
     }
 
     async go() {
-        await this.page.goto('http://localhost:3000')
+        await this.page.goto('/')
+    }
+
+    async selectBase(baseName: string) {
+        await this.page.getByRole('checkbox', { name: baseName }).check()
+    }
+
+    async searchMissions() {
+        await this.page.getByRole('button', { name: 'Buscar missões' }).click()
     }
 }
