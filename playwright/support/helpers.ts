@@ -1,21 +1,26 @@
-export function formatDate(date: string): string {
-    const MONTHS = [
-        'jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.',
-        'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'
-    ]
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
-    if (!match) {
-        throw new Error(`Invalid format: "${date}". Use YYYY-MM-DD.`)
-    }
+export function formatDate(dateStr: string): string {
+  const months = [
+    'jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.',
+    'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.',
+  ]
 
-    const year = Number(match[1])
-    const month = Number(match[2])
-    const day = Number(match[3])
+  const [year, month, day] = dateStr.split('-').map(Number)
 
-    const d = new Date(Date.UTC(year, month - 1, day))
-    if (d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) {
-        throw new Error(`Nonexistent date: "${date}".`)
-    }
+  if (!year || !month || !day) {
+    throw new Error(`Invalid date format: "${dateStr}". Expected AAAA-MM-DD.`)
+  }
 
-    return `${day} de ${MONTHS[month - 1]} de ${year}`
+  const monthName = months[month - 1]
+
+  return `${day} de ${monthName} de ${year}`
+}
+
+
+export function birthDateForAge(age: number): string {
+  const today = new Date();
+  const birthDate = new Date(today);
+
+  birthDate.setFullYear(today.getFullYear() - age);
+
+  return birthDate.toISOString().split('T')[0];
 }

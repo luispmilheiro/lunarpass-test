@@ -1,25 +1,16 @@
 {
-  "name": "lunarpass-test",
+  "name": "lunarpass-tests",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "@estruyf/github-actions-reporter": "1.14.0",
     "@faker-js/faker": "^10.6.0",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.2.0",
     "@types/pg": "^8.23.1",
-    "kysely": "^0.29.6",
+    "dotenv": "^18.0.10",
+    "kysely": "^0.29.5",
     "pg": "^8.23.0"
-  },
-  "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report",
-    "test:ui": "playwright test --ui"
-  },
-  "dependencies": {
-    "9router": "0.5.50",
-    "@anthropic-ai/claude-code": "^2.1.233"
   }
 }

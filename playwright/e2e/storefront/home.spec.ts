@@ -1,12 +1,12 @@
 import { test, expect } from '../../support'
 
-test('deve validar o título na aba do navegador', async ({ page, app }) => {
+test('deve validar o titulo na aba do navegador', async ({ app }) => {
   await app.store.homePage.go()
 
-  await expect(page).toHaveTitle(/Lunar Pass/)
+  await expect(app.store.homePage.page).toHaveTitle(/Lunar Pass/)
 })
 
-test('deve exibir o slogan na homepage', async ({ app }) => {
+test('deve ter exibir o slogan na homepage', async ({ app }) => {
   await app.store.homePage.go()
 
   await expect(app.store.homePage.slogan).toBeVisible()
