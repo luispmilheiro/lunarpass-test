@@ -3,54 +3,41 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Automatiza este cenário do storefront:\n\nContexto: Dado que eu iniciei a reserva de uma missão com vagas\n\nCenário: Avançar com seleção máxima de assentos permitida\nQuando eu seleciono todos os quatro assentos disponíveis (A1, A2, B1 e B2)\nEntão o valor total é calculado para os quatro passageiros\nE eu consigo avançar para a identificação dos passageiros",
-      "expected_output": "Lê docs/arquitetura.md, a fixture, o BookingPage e os specs existentes; descobre a tela de reserva com o Playwright MCP; reutiliza app.store.bookingPage (selectSeats, totalPrice, continue, passengersTitle) sem refatorá-lo; semeia uma missão com ID LP- exclusivo via cleanAndInsertMission; escreve o teste em playwright/e2e/storefront/ com o título igual ao nome do cenário; roda com --project=storefront e entrega o resumo.",
+      "prompt": "Automatiza este cenário do Lunar Pass:\n\nContexto: Dado que estou autenticado no controle de missões\n\nCenário: Não deve cadastrar com código duplicado\nDado que já existe uma missão com um código válido\nQuando eu submeto o cadastro com o mesmo código\nEntão eu sou informado de que já existe uma missão com este ID",
+      "expected_output": "Lê docs/arquitetura.md e os arquivos reais de mission-control, reutiliza LoginPage/DashPage/RegisterPage via app.mission, prepara a missão com cleanAndInsertMission e ID exclusivo no formato LP-0000A, escreve o spec em playwright/e2e/mission-control importando de ../../support, roda com --project=mission-control e entrega o resumo.",
       "assertions": [
-        "Lê docs/arquitetura.md e os arquivos de playwright/support antes de escrever código",
-        "O spec fica em playwright/e2e/storefront/ e importa { test, expect } de '../../support'",
-        "O título do teste é exatamente 'Avançar com seleção máxima de assentos permitida'",
-        "Usa app.store.bookingPage e não instancia Page Objects no spec",
-        "A missão é semeada com cleanAndInsertMission e tem um ID LP- que não existe em outro arquivo",
-        "Há uma asserção para o Então e uma para o E, sem asserções extras e sem contagem da vitrine",
-        "Não usa ';' no fim das instruções",
-        "Executa com --project=storefront e informa o resultado observado"
+        "Lê docs/arquitetura.md e os Page Objects/specs de mission-control antes de escrever código",
+        "Não usa assets/projeto/ como fonte (essa pasta genérica não se aplica ao Lunar Pass)",
+        "O spec importa test e expect de ../../support e usa { app } sem new RegisterPage",
+        "A massa usa cleanAndInsertMission (ou cleanMission + insert) de playwright/support/db.ts",
+        "O ID da missão é exclusivo e no formato já usado no repositório",
+        "Há uma asserção para o Então, sem asserções extras inventadas",
+        "O teste foi executado com --project=mission-control e o resultado informado é o observado"
       ]
     },
     {
       "id": 2,
-      "prompt": "Automatiza o cenário 'Missão esgotada aparece nos resultados sem opção de reserva' do docs/storefront.md.",
-      "expected_output": "Percebe que database.ts não tem função para criar reservas ou bilhetes e que Reservation/Ticket só têm missionId (D10); não inventa colunas nem simula a lotação pela tela; tenta confirmar a estrutura com segurança ou pergunta; reaproveita MissionsPage.soldOutBadgeByMission e bookLinkByMission; não escreve o teste completo sem a função de massa confirmada.",
+      "prompt": "Automatiza o cenário 'Buscar missões filtrando por uma base específica' no storefront. (A aplicação em http://localhost:3000 não responde.)",
+      "expected_output": "Detecta que a aplicação está indisponível, não inventa locators da vitrine, não cria data-mission-code só porque docs/aderencia.md pede, escreve apenas o que for possível com HomePage existente ou pergunta, entrega como não executado e não declara que passou. Não altera baseURL nem o TODO do project storefront.",
       "assertions": [
-        "Identifica que falta função de massa para deixar a missão esgotada",
-        "Não inventa colunas das tabelas reservations ou tickets",
-        "Pergunta ou mostra como confirmou a estrutura antes de acrescentar função em database.ts",
-        "Reutiliza os locators existentes de MissionsPage em vez de criar outros",
-        "Não verifica contagem total nem posição na vitrine"
+        "Informa que a aplicação não respondeu em http://localhost:3000",
+        "Não inventa locators de telas que não conseguiu ver",
+        "Não usa atributos apenas solicitados em docs/aderencia.md",
+        "Não declara que o teste passou",
+        "O resumo marca o resultado como 'não executado' com o motivo",
+        "Não altera playwright.config.ts, credenciais ou connection string"
       ]
     },
     {
       "id": 3,
-      "prompt": "Automatiza o cenário 'Emissão de tickets com sucesso após pagamento aprovado'. (A aplicação está parada e http://localhost:3000 não responde.)",
-      "expected_output": "Detecta que a aplicação está indisponível, não inventa telas nem locators além dos que já existem no BookingPage, não altera baseURL nem playwright.config.ts, escreve apenas o que é possível com o que existe ou pergunta como prosseguir e entrega como não executado.",
+      "prompt": "O teste de cadastro com código duplicado ficou instável. Corrige.",
+      "expected_output": "Lê references/diagnostico-de-falhas.md, classifica a causa (locator, sync, dados, ambiente ou produto), verifica colisão de ID de missão e execução paralela, não introduz waitForTimeout nem retries no teste, não refatora Page Objects fora da causa, não muda retries do playwright.config.ts.",
       "assertions": [
-        "Informa que a aplicação não respondeu em http://localhost:3000",
-        "Não inventa locators de telas que não conseguiu ver",
-        "Não declara que o teste passou",
-        "O resumo marca o resultado como 'não executado' com o motivo",
-        "Não altera playwright.config.ts, baseURL, credenciais nem a conexão do banco"
-      ]
-    },
-    {
-      "id": 4,
-      "prompt": "Os testes de register.spec.ts estão falhando. Corrige.",
-      "expected_output": "Roda o arquivo com --project=mission-control e --reporter=list, identifica o TypeError em app.mission.dashPage.addMission (o DashPage expõe addButton, D1), classifica como código da suíte e aplica a menor correção (usar addButton no spec), sem renomear o Page Object e sem mexer em asserções; roda de novo e informa o resultado observado.",
-      "assertions": [
-        "Executa com --project=mission-control",
-        "Aponta a divergência entre addMission e addButton com arquivo e linha",
-        "Corrige no spec usando addButton, sem alterar o DashPage",
-        "Não altera asserções nem títulos",
-        "Roda de novo e informa o resultado observado",
-        "Não exibe a connection string do banco"
+        "Classifica a causa antes de alterar código",
+        "Considera ID de missão duplicado / unique constraint como causa de dados, não flake de UI, quando ocorrer em paralelo",
+        "Não usa waitForTimeout",
+        "Não altera asserção para o teste passar se a tela divergir do Então",
+        "Não altera connection string nem playwright.config.ts"
       ]
     }
   ]

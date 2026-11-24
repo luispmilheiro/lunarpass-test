@@ -1,57 +1,51 @@
-# Massa de teste
+# Massa de teste (Lunar Pass)
 
-Os testes rodam em paralelo (`fullyParallel: true`, vários workers fora de CI) sobre um banco compartilhado. Por isso cada teste usa a própria missão, verifica só os próprios dados e parte de um estado conhecido.
+A massa é **híbrida, direto no PostgreSQL via Kysely** (`playwright/support/db.ts`). Não prepare estado navegando a UI quando a função de banco já cobre o **Dado**.
 
-O mecanismo do Lunar Pass é **acesso direto ao PostgreSQL via Kysely**, em `playwright/support/database.ts` (`docs/arquitetura.md`, pilar 3 e seção 3.3).
+## Funções existentes
 
-## Funções disponíveis
-
-| Função | O que faz |
+| Função | Uso observado |
 |---|---|
-| `cleanMission(mission)` | Apaga reservas, bilhetes e a missão, nessa ordem |
-| `cleanAndInsertMission(mission)` | `cleanMission` + `insertMission` |
-| `insertMission(mission)` | Insere `id`, `rocket`, `baseId`, `departureDate`, `returnDate`, `price` |
-| `deleteMission(id)` | Apaga a missão |
-| `deleteReservations(missionId)` | Apaga as reservas da missão |
-| `deleteTickets(missionId)` | Apaga os bilhetes da missão |
+| `cleanMission(mission)` | Apaga reservas, tickets e a missão pelo `mission.id`. Usado antes de cadastrar missão nova em `register.spec.ts`. |
+| `cleanAndInsertMission(mission)` | Limpa e insere. Usado no cenário de código duplicado. |
+| `insertMission(mission)` | Insert puro. |
+| `deleteMission(id)` | Delete da missão. |
+| `deleteReservation(missionId)` | Delete de reservas da missão. |
+| `deleteTicket(missionId)` | Delete de tickets da missão. |
 
-Uso no spec, como em `register.spec.ts`:
+Não há função de insert de reserva ou ticket no arquivo atual. Não invente.
 
-```ts
-import { Mission } from '../../support/types'
-import { cleanAndInsertMission } from '../../support/database'
+## Tipo `Mission` (`playwright/support/types.ts`)
 
-const mission: Mission = {
-    id: 'LP-0000A',
-    rocket: 'Starship',
-    baseId: 'aurora',
-    departureDate: '2028-01-20',
-    returnDate: '2028-01-27',
-    price: 1000
-}
+Campos usados nos specs: `id`, `rocket`, `baseId`, `departureDate`, `returnDate`, `price`.
 
-await cleanAndInsertMission(mission)
-```
+`baseId` nos testes existentes: `'aurora'`, `'orion'` (valores de option, não o rótulo "Aurora").
 
-## Regras
+Datas no objeto: `AAAA-MM-DD`. Exibição na tela de cadastro via `formatDate` (`helpers.ts`).
 
-1. **ID de missão exclusivo por cenário.** Formato da suíte: `LP-` seguido de 4 dígitos e um sufixo, como `LP-0128A` (ou um código descritivo, como `LP-DUP01`). Antes de escolher, rode `grep -rhoE "LP-[A-Z0-9]+" playwright docs` e não repita nenhum. Em Esquema do Cenário, um ID por linha.
-2. **Estado conhecido antes de agir:** `cleanMission` quando o teste vai criar a missão pela tela; `cleanAndInsertMission` quando o cenário parte de uma missão existente. É o padrão do projeto.
-3. **Limpeza depois do teste:** não é padrão no projeto hoje (D2 em `duvidas-em-aberto.md`). Não acrescente `afterEach` de limpeza sem combinar. A limpeza no início garante a reexecução.
-4. **Dados válidos para as regras que não estão em teste:** datas futuras, `returnDate` 7 dias depois da partida, preço positivo, `baseId` confirmado (`aurora`, `orion`; ver D11).
-5. **Storefront: nunca verifique contagem total nem posição** na vitrine (arquitetura 3.4). Localize a missão do teste pelo ID (`cardsByMissions([mission.id])`) e verifique dentro dela.
-6. **Não altere dados que o teste não criou:** usuário `buzz@lunarpass.dev`, missões de outros testes, cadastros de referência.
-7. **`faker`** pode gerar um valor pontual que só precisa ser inválido ou aleatório, como o ID com formato inválido em `register.spec.ts`. Não crie factories (fora de prioridade).
+`Reservation` e `Ticket` só têm `missionId`. Se o cenário precisar de assento ocupado, passagem emitida ou outros campos, **pergunte** — a estrutura de tabelas não está descrita além desses tipos.
+
+## Isolamento
+
+1. **ID exclusivo por cenário.** Formato já usado: `LP-` + quatro dígitos + letra (`LP-0128A`, `LP-3001A`). Procure no repositório antes de escolher. Colisão em paralelo gera `duplicate key`.
+2. **Estado conhecido antes de agir:** `cleanMission` ou `cleanAndInsertMission`, como o spec da área.
+3. **Specs atuais não usam `afterEach`.** Não introduza sem pedido (dúvida 5 em `SKILL.md`).
+4. Dados válidos para regras que não estão em teste: datas futuras, preço positivo, `baseId` que a tela aceita.
+5. **Storefront:** nunca `toHaveCount` da lista inteira nem `nth()`. Localize a missão do teste.
+6. **Não altere** missões que o teste não criou nem o usuário de demonstração.
+
+## Credenciais e conexão
+
+- Connection string está em `db.ts`. **Não altere. Não copie para a skill, resumo ou novos arquivos.**
+- Login de Mission Control: o mesmo email já usado em `login.spec.ts` e `register.spec.ts`. Não cadastre usuário pela UI nem pelo banco (não há função para isso).
 
 ## Quando falta uma função de massa
 
-Exemplo real: `database.ts` não cria reservas nem bilhetes, e `Reservation`/`Ticket` só têm `missionId` (D10). Cenários de missão esgotada, assento ocupado e concorrência precisam disso.
+1. Confirme no código existente (`db.ts`, `types.ts`, specs) quais tabelas e campos existem. Não invente.
+2. Se a lacuna for só uma composição das funções atuais (ex.: `cleanMission` + `insertMission`), use as funções atuais.
+3. Se precisar de campo ou tabela novos, pergunte.
+4. Nunca altere o `Pool`, SSL, host ou a connection string.
 
-1. Confirme a estrutura envolvida (tabela, colunas, valores obrigatórios) com segurança: no código existente ou consultando o esquema do banco em modo somente leitura. Não invente colunas.
-2. Acrescente a função no grupo certo de `database.ts` (`// ---- reservations ----`, `// ---- tickets ----`), no mesmo estilo: `export async function`, 4 espaços, `db.insertInto(...)`, camelCase.
-3. Se precisar de campos novos, complete a interface em `types.ts`.
-4. Confira que `cleanMission` continua apagando tudo o que a nova função cria.
-5. Registre no resumo o que foi acrescentado e por quê.
-6. Se não for possível descobrir a estrutura com segurança, pergunte. Não simule o estado pela tela sem combinar.
+## Faker
 
-Nunca altere a conexão (`Pool`, `connectionString`, `ssl`), o `CamelCasePlugin` nem a interface `Database` além de acrescentar tabelas confirmadas.
+`@faker-js/faker` já é usado em `register.spec.ts` para gerar código **inválido** (fora do formato `LP-0000`). Não crie factories. Não use faker para IDs de missão válidos — IDs válidos nos testes atuais são literais exclusivos.

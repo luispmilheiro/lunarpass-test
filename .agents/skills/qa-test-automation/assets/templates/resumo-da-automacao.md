@@ -1,45 +1,27 @@
 # Resumo da automação
 
-**Cenário(s):** <nome exato de cada cenário ou linha de Exemplos>
-**Origem:** <docs/storefront.md, seção / colado na conversa>
-**Módulo / project:** <mission-control | storefront>
-**Resultado:** <Passou | Falhou (automação) | Falhou (possível defeito do produto) | Não executado>
-
-## Arquivos
-
-| Arquivo | Ação | O que mudou |
-|---|---|---|
-| `playwright/e2e/<modulo>/<assunto>.spec.ts` | criado / alterado | <testes acrescentados> |
-| `playwright/support/pages/<modulo>/<tela>.page.ts` | criado / alterado / reutilizado | <locators e métodos> |
-| `playwright/support/index.ts` | alterado / sem mudança | <registro na fixture> |
-| `playwright/support/database.ts` / `types.ts` | alterado / sem mudança | <função ou campo novo e por quê> |
-
-## Massa de teste
-
-- IDs de missão usados: <LP-....> (conferidos com grep, sem repetição)
-- Preparação: <cleanMission / cleanAndInsertMission / função nova>
-- O que fica no banco ao final: <ex.: a missão LP-.... (sem afterEach, D2)>
-
-## Execução
-
-```bash
-<comando exato usado>
-```
-
-- Resultado observado: <n passou / n falhou, tempo>
-- Repetição em série: <--repeat-each=3 --workers=1: resultado>
-- Se não executado: <motivo e mensagem de erro>
-
-## Falhas
-
-| Teste | Causa | Esperado | Observado | Ação |
-|---|---|---|---|---|
-| <título> | <locator / código da suíte / sincronização / dados / ambiente / produto> | <...> | <...> | <corrigido / reportado> |
+- **Módulo:** [mission-control | storefront]
+- **Cenário(s):** [nome]
+- **Spec:** `playwright/e2e/<modulo>/<arquivo>.spec.ts`
+- **Page Objects:** [caminhos criados ou apenas reutilizados]
+- **Fixture:** [ex.: `app.mission.registerPage` / nenhuma alteração]
+- **Massa:** [funções de `db.ts` e ID(s) de missão]
+- **Comando:** `npx playwright test playwright/e2e/<modulo>/<arquivo>.spec.ts --project=<modulo>`
+- **Resultado da execução:** [passou | falhou (produto) | falhou (automação, já corrigida) | não executado]
+- **Vezes em série:** `--repeat-each=3 --workers=1` — [estável | instável | não rodou]
 
 ## Observações
 
-- **Textos observados, não definidos na especificação:** <lista>
-- **Divergências entre cenário e tela (perguntas):** <lista>
-- **Decisões sobre itens de `duvidas-em-aberto.md`:** <D# e a orientação seguida>
-- **Sugestões de testabilidade:** <elementos sem papel ou identificador estável>
-- **Pendências:** <cenários não automatizados e por quê>
+- Textos de tela não definidos no Gherkin:
+- Locators sem role/label/placeholder/testid:
+- Dúvidas em aberto (ver `SKILL.md`):
+
+## Falha de produto (se houver)
+
+- Esperado (Então):
+- Observado:
+- Evidência (`test-results/` ou relatório):
+
+## O que não foi feito
+
+- [config, credenciais, refatoração, afterEach, módulo novo, etc.]

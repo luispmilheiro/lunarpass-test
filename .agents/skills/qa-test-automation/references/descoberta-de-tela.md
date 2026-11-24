@@ -1,50 +1,58 @@
-# Descoberta de tela com o Playwright MCP
+# Descoberta de tela com o Playwright MCP (Lunar Pass)
 
-O cenário diz **o que** acontece; a tela diz **como**. Antes de escrever ou completar o Page Object, percorra o caminho do cenário na aplicação e anote os elementos reais.
+O cenário diz **o que** acontece; a tela diz **como**. Antes de escrever o Page Object, percorra o caminho na aplicação e anote os elementos reais.
 
-O Playwright MCP está configurado em `.mcp.json` (`@playwright/mcp`). Não use outra ferramenta para explorar a aplicação.
+## Ambiente
+
+- URL configurada nos projects: `http://localhost:3000`.
+- Mission Control login: `/mission-control/login` (como em `login.page.ts`).
+- Storefront home: `/` (como em `home.page.ts`).
+- Não invente outra `baseURL` (há um TODO no project `storefront`; a URL em uso é a mesma).
 
 ## Procedimento
 
-1. Confirme que a aplicação responde em `http://localhost:3000` (o `baseURL` dos dois projects). Se não responder, não invente a tela: siga apenas com o que já existe nos Page Objects e entregue como "não executado". Não suba a aplicação por conta própria nem altere o `baseURL`.
-2. Abra a página inicial do caminho:
-   - Storefront: `/` (vitrine), `/missions` (resultados) ou `/booking/<missionId>` (reserva).
-   - Mission Control: `/mission-control/login`, com `buzz@lunarpass.dev` / `pwd123`, as credenciais que os specs já usam.
-3. Leia o **snapshot de acessibilidade** de cada tela: papel, nome acessível e estado de cada elemento.
-4. Execute as ações do **Quando** para ver as telas seguintes e o resultado do **Então** (alertas, toasts, mudanças de estado).
-5. Anote, por tela: o caminho da URL, cada elemento usado e o melhor locator.
-6. Compare com o Page Object existente da tela: o que já existe é reutilizado, não redescoberto.
+1. Confirme que a aplicação responde em `http://localhost:3000`. Se não responder, não invente a tela: siga só com Page Objects já existentes e entregue como "não executado".
+2. Use **somente** o Playwright MCP da sessão (navegação, snapshot de acessibilidade, clique, digitação, abas). Confirme as ferramentas disponíveis antes de começar. Não use script, `curl` ou outro navegador para descobrir a tela.
+3. Abra a página inicial do caminho do cenário.
+4. Leia o **snapshot de acessibilidade** de cada tela (papel, nome acessível, estado).
+5. Execute as ações do **Quando** para ver as telas seguintes e o resultado do **Então**.
+6. Anote, por tela: caminho da URL, cada elemento usado e o locator segundo a ordem abaixo.
 7. Feche a aba ao terminar.
 
 ## Cuidados
 
-- A descoberta pode precisar de uma missão. Use a mesma massa que o teste vai criar (ver `massa-de-teste.md`), não missões semeadas por outros testes.
-- Não conclua pagamentos nem cadastros com dados que não sejam da massa do teste só para explorar.
-- Não invente usuários. Credenciais só as que os specs já usam.
-- `docs/aderencia.md` descreve a testabilidade esperada de cada tela e o que foi pedido ao time de desenvolvimento. O que vale é o que o snapshot mostra hoje.
+- A descoberta pode precisar de dados. Use a massa que o teste vai criar (`massa-de-teste.md`) e alinhe a limpeza ao spec da área, ou use dados de demonstração **sem alterá-los**.
+- Não conclua compras, cadastros ou envios com dados reais só para explorar.
+- Credenciais vêm dos testes existentes (`login.spec.ts` / `register.spec.ts`). Não invente usuários.
+- `docs/aderencia.md` sugere atributos (`data-mission-code`, `data-testid` de datas, empty state, etc.). Só use se o snapshot **mostrar** esse atributo. Solicitação à aplicação não é locator.
 
-## Escolha do locator
-
-Ordem definida em `docs/arquitetura.md`, seção 3.2:
+## Ordem de locators (`docs/arquitetura.md`)
 
 | Prioridade | Locator | Quando |
 |---|---|---|
-| 1 | `getByRole(papel, { name })` | Botões, links, títulos, campos com nome acessível, diálogos, alertas |
-| 2 | `getByLabel(rótulo)` | Campos associados a um rótulo (ex.: `getByLabel('Base lunar')`) |
-| 3 | `getByPlaceholder(texto)` | Campos identificados pelo texto de ajuda (ex.: `'Informe seu email'`) |
-| 4 | `getByTestId(id)` | Quando a semântica não basta (ex.: `summary-total-price`, `departure-date`) |
+| 1 | `getByRole(papel, { name })` | Botões, links, títulos, diálogos, alertas, textbox, spinbutton |
+| 2 | `getByLabel(rótulo)` | Campos associados a rótulo (`select` de base lunar, etc.) |
+| 3 | `getByPlaceholder(texto)` | Campos identificados pelo texto de ajuda (login usa isso) |
+| 4 | `getByTestId(id)` | Quando a semântica não basta (`mission-form-return-date` no cadastro) |
 
-Padrões complementares já usados no código:
+Evite XPath, subidas no DOM (`/..`) e classes CSS.
 
-- **Escopo por item:** `page.getByRole('listitem').filter({ hasText: missionId })` e, dentro dele, `getByRole` ou `getByTestId` (`missions.page.ts`).
-- **Texto sem papel próprio:** `getByRole('paragraph').filter({ hasText: '...' })` (`booking.page.ts`). Sobre `getByText`, ver D4 em `duvidas-em-aberto.md`.
-- **Nome parcial ou variável:** `RegExp` no `name` (ex.: `new RegExp(\`Assento ${seat}\`)`).
-- **Alternativas da mesma informação:** `.or(...)` (`missions.page.ts`).
+`getByText` não está na lista da arquitetura. Ver dúvida 6 em `SKILL.md`.
 
-Evite XPath, subidas no DOM (`/..`) e classes CSS (arquitetura 3.2 e `docs/aderencia.md`). Seletores por atributo (`page.locator('[...]')`), ver D5. Elemento sem papel nem identificador estável vira sugestão de testabilidade no resumo.
+Exemplos **já usados** no repositório (não são lista fechada; a tela manda):
+
+- `getByRole('heading', { name: 'Mission Control' })`
+- `getByRole('button', { name: 'Entrar' })` / `{ name: 'Sair' }` / `{ name: 'Salvar missão' }`
+- `getByRole('link', { name: 'Nova missão' })`
+- `getByRole('alert')`
+- `getByPlaceholder('Informe seu email')`
+- `getByLabel('Base lunar')`
+- `getByTestId('mission-form-return-date')`
+- Toast: `getByRole('listitem')`
 
 ## Estados que a descoberta precisa revelar
 
-- **Botões desabilitados:** o snapshot nem sempre mostra. Verifique o estado antes de planejar um clique (ex.: "Continuar" sem assento selecionado).
-- **Mensagens dinâmicas:** textos de status mudam com a interação (resumo da reserva, `role="status"` do estado vazio, toast em `listitem`). Anote o texto de cada estado.
-- **Contraprova:** quando a asserção verifica um estado (botão desabilitado, mensagem de vazio), confirme na tela que o estado oposto existe (o botão habilita, a mensagem muda). Assim a asserção prova algo e não passa por acaso.
+- **Botões desabilitados:** o snapshot nem sempre mostra. Verifique o estado antes de planejar um clique.
+- **Mensagens dinâmicas:** anote o texto de cada estado que o cenário usa.
+- **Contraprova:** quando a asserção verifica um estado (desabilitado, vazio), confirme na tela que o estado oposto existe.
+- **Storefront / listas:** identifique como localizar **a missão do teste** (código visível, link `href` de reserva, testid). Nunca planeje asserção por índice da lista.
